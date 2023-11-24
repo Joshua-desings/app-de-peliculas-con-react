@@ -1,11 +1,57 @@
 import React, { useState, useEffect } from "react";
+import Header from "./components/Header"; 
 import MovieList from "./components/MovieList";
 import MovieDetails from "./components/MovieDetails";
 import Loader from "./components/Loader";
 import tmdbService from "./services/tmdbService";
-import SearchBar from "./components/SearchBar";
-import ThemeSwitcher from "./components/ThemeSwitcher";
 import "./App.css";
+
+const ThemeSwitcher = ({ onThemeChange }) => {
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  const toggleTheme = () => {
+    setIsDarkMode(!isDarkMode);
+    onThemeChange(isDarkMode ? "light" : "dark");
+  };
+
+  const handleResize = () => {
+    setIsMobile(window.innerWidth <= 768);
+  };
+
+  useEffect(() => {
+    window.addEventListener("resize", handleResize);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
+  return (
+    <button
+      onClick={toggleTheme}
+      style={{
+        fontSize: isMobile ? "30px" : "50px",
+        cursor: "pointer",
+        background: "none",
+        border: "none",
+        outline: "none",
+        position: "absolute",
+        top: "0px",
+        right: "10px",
+      }}
+    >
+      {isDarkMode ? (
+        <span role="img" aria-label="Sol" style={{ marginRight: "5px" }}>
+          ☀️
+        </span>
+      ) : (
+        <span role="img" aria-label="Luna" style={{ marginRight: "5px" }}>
+          🌙
+        </span>
+      )}
+    </button>
+  );
+};
 
 function App() {
   const [movies, setMovies] = useState([]);
@@ -58,6 +104,10 @@ function App() {
     setSelectedMovie(null);
   };
 
+  useEffect(() => {
+    fetchPopularMovies();
+  }, []);
+
   const handleThemeChange = (theme) => {
     setCurrentTheme(theme);
   };
@@ -82,8 +132,8 @@ function App() {
         color: currentTheme === "light" ? "#000000" : "#ffffff",
       }}
     >
+      <Header onThemeChange={handleThemeChange} onSearch={handleSearch} />
       <ThemeSwitcher onThemeChange={handleThemeChange} />
-      <SearchBar onSearch={handleSearch} />
       <div className="content-container">
         {loading ? (
           <Loader />
